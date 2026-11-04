@@ -1,0 +1,72 @@
+{
+  "name": "@alaborderie/backstage-plugin-app-module-ember",
+  "version": "0.1.0",
+  "description": "Ember theme and shell navigation for the Backstage new frontend system.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alaborderie/backstage-ember",
+    "directory": "plugins/app-module-ember"
+  },
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.esm.js",
+    "types": "dist/index.d.ts"
+  },
+  "backstage": {
+    "role": "frontend-plugin-module",
+    "pluginId": "app",
+    "pluginPackage": "@backstage/plugin-app"
+  },
+  "sideEffects": [
+    "*.css"
+  ],
+  "scripts": {
+    "start": "backstage-cli package start --config dev/app-config.yaml",
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack"
+  },
+  "dependencies": {
+    "@backstage/core-components": "^0.18.15",
+    "@backstage/core-plugin-api": "^1.12.11",
+    "@backstage/frontend-plugin-api": "^0.18.2",
+    "@backstage/plugin-app-react": "^0.2.8",
+    "@backstage/plugin-notifications": "^0.6.1",
+    "@backstage/plugin-search": "^1.7.9",
+    "@backstage/theme": "^0.7.3",
+    "@backstage/ui": "^0.19.0",
+    "@fontsource-variable/geist": "^5.3.0",
+    "@fontsource-variable/geist-mono": "^5.3.0",
+    "@material-ui/core": "^4.12.2",
+    "@material-ui/icons": "^4.9.1",
+    "lucide-react": "^1.66.0"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0 || ^18.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0",
+    "react-router-dom": "^6.30.2"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.36.7",
+    "@backstage/frontend-defaults": "^0.5.7",
+    "@backstage/frontend-dev-utils": "^0.1.7",
+    "@backstage/frontend-test-utils": "^0.6.5",
+    "@backstage/test-utils": "^1.7.23",
+    "@testing-library/dom": "^9.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.0.0",
+    "react": "^18.0.2",
+    "react-dom": "^18.0.2",
+    "react-router-dom": "^6.30.2"
+  },
+  "files": [
+    "dist"
+  ]
+}

@@ -1,0 +1,9 @@
+# Dev app for the Ember theme and navigation: `yarn start` in this package.
+app:
+  title: Ember (dev)
+  baseUrl: http://localhost:3000
+  extensions:
+    - theme:app/light: false
+    - theme:app/dark: false
+backend:
+  baseUrl: http://localhost:7007
