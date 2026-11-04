@@ -137,7 +137,12 @@ export function toPullRequest(raw: RawPullRequest): GithubPullRequest {
 /** @public */
 export interface GithubGraphqlClientOptions {
   /** The signed-in user's GitHub token source, usually `githubAuthApiRef`. */
-  auth: { getAccessToken(scope?: string[]): Promise<string> };
+  auth: {
+    getAccessToken(
+      scope?: string[],
+      options?: { optional?: boolean },
+    ): Promise<string>;
+  };
   /** Extra OAuth scopes. A GitHub App ignores scopes, so the default is none. */
   scopes?: string[];
   /** Defaults to `https://api.github.com/graphql`. */
@@ -242,7 +247,15 @@ export class GithubGraphqlClient implements GithubHomeApi {
     query: string,
     variables: Record<string, unknown>,
   ): Promise<T> {
-    const token = await this.options.auth.getAccessToken(this.options.scopes);
+    const token = await this.options.auth.getAccessToken(this.options.scopes, {
+      optional: true,
+    });
+    if (!token) {
+      throw new GithubHomeError(
+        { kind: 'unauthorized', status: 0 },
+        'There is no GitHub session',
+      );
+    }
     let response: Response;
     try {
       response = await this.options.fetch(this.options.endpoint, {

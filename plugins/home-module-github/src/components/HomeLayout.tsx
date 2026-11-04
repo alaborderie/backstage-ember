@@ -136,6 +136,7 @@ function scrollToWidget(event: MouseEvent<HTMLAnchorElement>, id: string) {
 }
 
 function Summary(props: {
+  githubFailed: boolean;
   agents?: AgentCounts;
   pullRequests?: number;
   issues?: number;
@@ -197,7 +198,11 @@ function Summary(props: {
           across {plural(props.projects ?? 0, 'project', 'projects')}.
         </>
       ) : (
-        'Loading your GitHub summary…'
+        <>
+          {props.githubFailed
+            ? 'GitHub is not connected yet.'
+            : 'Loading your GitHub summary…'}
+        </>
       )}
     </p>
   );
@@ -324,6 +329,7 @@ export function HomeLayout({ widgets, defaultConfig }: HomePageLayoutProps) {
             {firstName ? `, ${firstName}` : ''}.
           </h1>
           <Summary
+            githubFailed={!!(issues.failure || pulls.failure)}
             agents={agents}
             pullRequests={prItems?.length}
             issues={issueStats?.total}

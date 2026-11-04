@@ -162,10 +162,15 @@ function describe(
         ),
       };
     case 'unauthorized':
-      return {
-        title: 'Your GitHub session expired',
-        text: 'Sign in to GitHub again to refresh it.',
-      };
+      return failure.status === 0
+        ? {
+            title: 'Sign in to GitHub',
+            text: 'Connect your GitHub account to load this list.',
+          }
+        : {
+            title: 'Your GitHub session expired',
+            text: 'Sign in to GitHub again to refresh it.',
+          };
     default:
       return {
         title: 'GitHub did not answer',
@@ -217,7 +222,8 @@ export function ErrorState({
         </button>
       }
     >
-      {text} No cached results yet.
+      {text}
+      {failure.kind === 'unauthorized' ? '' : ' No cached results yet.'}
     </StateMessage>
   );
 }

@@ -244,6 +244,24 @@ describe('GithubGraphqlClient', () => {
       });
     });
 
+    it('reports a missing GitHub session without prompting for sign-in', async () => {
+      const getAccessToken = jest.fn(async () => '');
+      const fetch = jest.fn();
+      const client = new GithubGraphqlClient({
+        auth: { getAccessToken },
+        fetch,
+      });
+      const error: unknown = await client
+        .getOpenIssues({ owner: 'acme' })
+        .catch(e => e);
+      expect((error as GithubHomeError).failure).toEqual({
+        kind: 'unauthorized',
+        status: 0,
+      });
+      expect(getAccessToken).toHaveBeenCalledWith([], { optional: true });
+      expect(fetch).not.toHaveBeenCalled();
+    });
+
     it('reports server errors as unavailable', async () => {
       const error = await fail(
         new Response('', { status: 502, statusText: 'Bad Gateway' }),
