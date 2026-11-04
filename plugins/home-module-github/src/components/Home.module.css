@@ -76,7 +76,8 @@
   background: none;
   color: var(--bui-fg-secondary);
   cursor: pointer;
-  transition: background-color var(--fast), color var(--fast), transform var(--press);
+  transition: background-color var(--fast), color var(--fast),
+    transform var(--press);
 }
 .iconButton:hover {
   background: var(--bui-bg-neutral-2);
@@ -137,7 +138,8 @@
   transition: box-shadow var(--fast);
 }
 .field:focus-within {
-  box-shadow: inset 0 0 0 1px var(--accent-text), 0 0 0 3px var(--bui-announcement-bg-subdued);
+  box-shadow: inset 0 0 0 1px var(--accent-text),
+    0 0 0 3px var(--bui-announcement-bg-subdued);
 }
 .field input {
   flex: 1;
@@ -169,7 +171,8 @@
   font: 500 13px/1 var(--bui-font-regular);
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color var(--fast), color var(--fast), transform var(--press);
+  transition: background-color var(--fast), color var(--fast),
+    transform var(--press);
 }
 .chip:hover {
   background: var(--bui-bg-neutral-2);
@@ -227,7 +230,8 @@
   left: 0;
   border-radius: 8px;
   background: var(--bui-bg-neutral-3);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   transition: transform var(--base) var(--ease), width var(--base) var(--ease);
 }
 
@@ -411,7 +415,8 @@
   font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
-  transition: color var(--fast), background-color var(--fast), transform var(--press);
+  transition: color var(--fast), background-color var(--fast),
+    transform var(--press);
 }
 .act:hover {
   background: var(--bui-bg-neutral-4);
@@ -610,7 +615,12 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.045), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.045),
+    transparent
+  );
   transform: translateX(-100%);
   animation: shimmer 1.3s var(--ease-inout) infinite;
 }

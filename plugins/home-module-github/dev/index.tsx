@@ -9,5 +9,12 @@ import { installGithubMock } from './mockGithub';
 installGithubMock();
 
 createDevApp({
-  features: [homePlugin, homeModuleGithub, emberAppModule, devAppModule, searchPlugin, ...devPagePlugins],
+  features: [
+    homePlugin,
+    homeModuleGithub,
+    emberAppModule,
+    devAppModule,
+    searchPlugin,
+    ...devPagePlugins,
+  ],
 });

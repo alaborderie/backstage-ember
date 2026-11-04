@@ -155,7 +155,9 @@ export interface GithubGraphqlClientOptions {
  * @public
  */
 export class GithubGraphqlClient implements GithubHomeApi {
-  private readonly options: Required<Omit<GithubGraphqlClientOptions, 'fetch'>> & {
+  private readonly options: Required<
+    Omit<GithubGraphqlClientOptions, 'fetch'>
+  > & {
     fetch: typeof fetch;
   };
   private readonly inflight = new Map<string, Promise<unknown>>();
@@ -175,12 +177,19 @@ export class GithubGraphqlClient implements GithubHomeApi {
   getOpenIssues({ owner }: { owner?: string }): Promise<GithubIssue[]> {
     return this.shared(`issues:${owner ?? '@viewer'}`, async () => {
       const login = owner || (await this.viewerLogin());
-      const nodes = await this.search<RawIssue>(searchQuery(ISSUE_FIELDS), SEARCHES.issues(login));
+      const nodes = await this.search<RawIssue>(
+        searchQuery(ISSUE_FIELDS),
+        SEARCHES.issues(login),
+      );
       return nodes.map(toIssue);
     });
   }
 
-  getPullRequests({ scope }: { scope: PullRequestScope }): Promise<GithubPullRequest[]> {
+  getPullRequests({
+    scope,
+  }: {
+    scope: PullRequestScope;
+  }): Promise<GithubPullRequest[]> {
     return this.shared(`pulls:${scope}`, async () => {
       const nodes = await this.search<RawPullRequest>(
         searchQuery(PULL_REQUEST_FIELDS),
@@ -215,9 +224,13 @@ export class GithubGraphqlClient implements GithubHomeApi {
     const items: T[] = [];
     let cursor: string | null = null;
     for (let page = 0; page < this.options.maxPages; page++) {
-      const data: SearchPage<T> = await this.graphql<SearchPage<T>>(query, { q, cursor });
+      const data: SearchPage<T> = await this.graphql<SearchPage<T>>(query, {
+        q,
+        cursor,
+      });
       for (const node of data.search.nodes) {
-        if (node && typeof node === 'object' && 'number' in node) items.push(node as T);
+        if (node && typeof node === 'object' && 'number' in node)
+          items.push(node as T);
       }
       if (!data.search.pageInfo.hasNextPage) break;
       cursor = data.search.pageInfo.endCursor;
@@ -225,7 +238,10 @@ export class GithubGraphqlClient implements GithubHomeApi {
     return items;
   }
 
-  private async graphql<T>(query: string, variables: Record<string, unknown>): Promise<T> {
+  private async graphql<T>(
+    query: string,
+    variables: Record<string, unknown>,
+  ): Promise<T> {
     const token = await this.options.auth.getAccessToken(this.options.scopes);
     let response: Response;
     try {
@@ -240,7 +256,9 @@ export class GithubGraphqlClient implements GithubHomeApi {
     } catch (error) {
       throw new GithubHomeError(
         { kind: 'unavailable', detail: 'Network error' },
-        `GitHub is unreachable: ${error instanceof Error ? error.message : String(error)}`,
+        `GitHub is unreachable: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
       );
     }
 
@@ -260,7 +278,11 @@ export class GithubGraphqlClient implements GithubHomeApi {
       const resetAt = rateLimitResetAt(response.headers, now);
       throw limited
         ? new GithubHomeError(
-            { kind: 'rate-limited', status: response.status, ...(resetAt ? { resetAt } : {}) },
+            {
+              kind: 'rate-limited',
+              status: response.status,
+              ...(resetAt ? { resetAt } : {}),
+            },
             `${response.status} rate limit exceeded`,
           )
         : new GithubHomeError(
@@ -270,7 +292,11 @@ export class GithubGraphqlClient implements GithubHomeApi {
     }
     if (!response.ok) {
       throw new GithubHomeError(
-        { kind: 'unavailable', status: response.status, detail: `${response.status} ${response.statusText}`.trim() },
+        {
+          kind: 'unavailable',
+          status: response.status,
+          detail: `${response.status} ${response.statusText}`.trim(),
+        },
         `GitHub answered ${response.status}`,
       );
     }
@@ -283,7 +309,11 @@ export class GithubGraphqlClient implements GithubHomeApi {
     if (errors.some(error => error.type === 'RATE_LIMITED')) {
       const resetAt = rateLimitResetAt(response.headers, now);
       throw new GithubHomeError(
-        { kind: 'rate-limited', status: response.status, ...(resetAt ? { resetAt } : {}) },
+        {
+          kind: 'rate-limited',
+          status: response.status,
+          ...(resetAt ? { resetAt } : {}),
+        },
         'GraphQL rate limit exceeded',
       );
     }

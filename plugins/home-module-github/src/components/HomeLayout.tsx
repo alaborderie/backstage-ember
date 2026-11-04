@@ -1,4 +1,11 @@
-import { Fragment, useCallback, useEffect, useMemo, useState, type MouseEvent } from 'react';
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type MouseEvent,
+} from 'react';
 import { Link } from 'react-router-dom';
 import {
   discoveryApiRef,
@@ -7,7 +14,10 @@ import {
   useApi,
 } from '@backstage/core-plugin-api';
 import { CustomHomepageGrid } from '@backstage/plugin-home';
-import type { HomePageLayoutProps, HomePageWidgetData } from '@backstage/plugin-home-react/alpha';
+import type {
+  HomePageLayoutProps,
+  HomePageWidgetData,
+} from '@backstage/plugin-home-react/alpha';
 import { Bot, CircleDot, GitPullRequest, Plus } from 'lucide-react';
 import {
   githubHomeApiRef,
@@ -52,11 +62,15 @@ function useAgentCounts(): AgentCounts | undefined {
         const body: unknown = await response.json();
         const agents = Array.isArray(body) ? body : [];
         const status = (agent: unknown) =>
-          agent && typeof agent === 'object' ? (agent as { status?: unknown }).status : undefined;
+          agent && typeof agent === 'object'
+            ? (agent as { status?: unknown }).status
+            : undefined;
         if (active) {
           setCounts({
             needsYou: agents.filter(a => status(a) === 'needs_input').length,
-            working: agents.filter(a => status(a) === 'running' || status(a) === 'queued').length,
+            working: agents.filter(
+              a => status(a) === 'running' || status(a) === 'queued',
+            ).length,
           });
         }
       } catch {
@@ -90,16 +104,22 @@ function useFirstName(): string | undefined {
 }
 
 function issuesWidgetProps(widgets: HomePageWidgetData[]): IssuesWidgetProps {
-  const widget = widgets.find(w => w.node.spec.id === 'home-page-widget:home/github-issues');
+  const widget = widgets.find(
+    w => w.node.spec.id === 'home-page-widget:home/github-issues',
+  );
   return (widget?.component.props ?? {}) as IssuesWidgetProps;
 }
 
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+const plural = (n: number, one: string, many: string) =>
+  `${n} ${n === 1 ? one : many}`;
 
 function dateLabel(date: Date): string {
   const part = (options: Intl.DateTimeFormatOptions) =>
     new Intl.DateTimeFormat('en-GB', options).format(date);
-  return `${part({ weekday: 'long' })}, ${part({ day: 'numeric', month: 'long' })}`;
+  return `${part({ weekday: 'long' })}, ${part({
+    day: 'numeric',
+    month: 'long',
+  })}`;
 }
 
 function scrollToWidget(event: MouseEvent<HTMLAnchorElement>, id: string) {
@@ -107,7 +127,10 @@ function scrollToWidget(event: MouseEvent<HTMLAnchorElement>, id: string) {
   if (!target) return;
   event.preventDefault();
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  target.scrollIntoView({
+    behavior: reduce ? 'auto' : 'smooth',
+    block: 'start',
+  });
   target.querySelector<HTMLElement>('h2')?.setAttribute('tabindex', '-1');
   target.querySelector<HTMLElement>('h2')?.focus({ preventScroll: true });
 }
@@ -123,11 +146,22 @@ function Summary(props: {
   let hot: string | undefined;
   if (agents) {
     if (agents.needsYou) {
-      hot = agents.needsYou === 1 ? 'One agent is waiting for you' : `${agents.needsYou} agents are waiting for you`;
-      lead = agents.working ? `, ${agents.working === 1 ? 'one is' : `${agents.working} are`} working. ` : '. ';
+      hot =
+        agents.needsYou === 1
+          ? 'One agent is waiting for you'
+          : `${agents.needsYou} agents are waiting for you`;
+      lead = agents.working
+        ? `, ${
+            agents.working === 1 ? 'one is' : `${agents.working} are`
+          } working. `
+        : '. ';
     } else {
       lead = agents.working
-        ? `${agents.working === 1 ? 'One agent is' : `${agents.working} agents are`} working. `
+        ? `${
+            agents.working === 1
+              ? 'One agent is'
+              : `${agents.working} agents are`
+          } working. `
         : 'All agents are idle. ';
     }
   }
@@ -143,11 +177,21 @@ function Summary(props: {
       {loaded ? (
         <>
           You have{' '}
-          <a href={`#${PULL_REQUESTS_WIDGET_ID}`} onClick={e => scrollToWidget(e, PULL_REQUESTS_WIDGET_ID)}>
-            {plural(props.pullRequests!, 'open pull request', 'open pull requests')}
+          <a
+            href={`#${PULL_REQUESTS_WIDGET_ID}`}
+            onClick={e => scrollToWidget(e, PULL_REQUESTS_WIDGET_ID)}
+          >
+            {plural(
+              props.pullRequests!,
+              'open pull request',
+              'open pull requests',
+            )}
           </a>{' '}
           and{' '}
-          <a href={`#${ISSUES_WIDGET_ID}`} onClick={e => scrollToWidget(e, ISSUES_WIDGET_ID)}>
+          <a
+            href={`#${ISSUES_WIDGET_ID}`}
+            onClick={e => scrollToWidget(e, ISSUES_WIDGET_ID)}
+          >
             {plural(props.issues!, 'issue', 'issues')}
           </a>{' '}
           across {plural(props.projects ?? 0, 'project', 'projects')}.
@@ -187,7 +231,12 @@ function Tile(props: {
       {content}
     </Link>
   ) : (
-    <a className={className} style={style} href={`#${props.id}`} onClick={e => scrollToWidget(e, props.id)}>
+    <a
+      className={className}
+      style={style}
+      href={`#${props.id}`}
+      onClick={e => scrollToWidget(e, props.id)}
+    >
       {content}
     </a>
   );
@@ -204,9 +253,18 @@ export function HomeLayout({ widgets, defaultConfig }: HomePageLayoutProps) {
   const agents = useAgentCounts();
   const { owner, hiddenLabels = ['on-hold'] } = issuesWidgetProps(widgets);
 
-  const loadIssues = useCallback(() => api.getOpenIssues(owner ? { owner } : {}), [api, owner]);
-  const loadPulls = useCallback(() => api.getPullRequests({ scope: 'authored' }), [api]);
-  const issues = useGithubData<GithubIssue>(`issues:${owner ?? '@viewer'}`, loadIssues);
+  const loadIssues = useCallback(
+    () => api.getOpenIssues(owner ? { owner } : {}),
+    [api, owner],
+  );
+  const loadPulls = useCallback(
+    () => api.getPullRequests({ scope: 'authored' }),
+    [api],
+  );
+  const issues = useGithubData<GithubIssue>(
+    `issues:${owner ?? '@viewer'}`,
+    loadIssues,
+  );
   const pulls = useGithubData<GithubPullRequest>('pulls:authored', loadPulls);
 
   const issueStats = useMemo(() => {
@@ -282,7 +340,10 @@ export function HomeLayout({ widgets, defaultConfig }: HomePageLayoutProps) {
         )}
       </section>
 
-      <nav className={`${styles.pulse} ${agents ? '' : styles.pulseTwo}`} aria-label="At a glance">
+      <nav
+        className={`${styles.pulse} ${agents ? '' : styles.pulseTwo}`}
+        aria-label="At a glance"
+      >
         <Tile
           id={ISSUES_WIDGET_ID}
           Icon={CircleDot}
@@ -290,7 +351,9 @@ export function HomeLayout({ widgets, defaultConfig }: HomePageLayoutProps) {
           value={issueStats?.total}
           sub={
             issueStats?.hidden
-              ? `${issueStats.hidden} ${hiddenLabels.join(', ').replace(/-/g, ' ')} hidden`
+              ? `${issueStats.hidden} ${hiddenLabels
+                  .join(', ')
+                  .replace(/-/g, ' ')} hidden`
               : 'nothing hidden'
           }
           index={0}
@@ -309,7 +372,9 @@ export function HomeLayout({ widgets, defaultConfig }: HomePageLayoutProps) {
             Icon={Bot}
             label="Agents"
             value={agents.needsYou + agents.working}
-            sub={agents.needsYou ? `${agents.needsYou} needs you` : 'none waiting'}
+            sub={
+              agents.needsYou ? `${agents.needsYou} needs you` : 'none waiting'
+            }
             hot={agents.needsYou > 0}
             index={2}
           />

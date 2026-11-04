@@ -51,7 +51,11 @@ import {
 import { useNeedsYouCount } from './useNeedsYouCount';
 import styles from './Nav.module.css';
 
-const ICON_PROPS = { size: 18, strokeWidth: 1.75, 'aria-hidden': true } as const;
+const ICON_PROPS = {
+  size: 18,
+  strokeWidth: 1.75,
+  'aria-hidden': true,
+} as const;
 
 /** Ember line icons for the pages the nav knows; other pages keep theirs. */
 const PAGE_ICONS: Record<string, LucideIcon> = {
@@ -63,7 +67,10 @@ const PAGE_ICONS: Record<string, LucideIcon> = {
   'page:scaffolder': Plus,
 };
 
-const asIcon = (Icon: LucideIcon): ComponentType => () => <Icon {...ICON_PROPS} />;
+const asIcon =
+  (Icon: LucideIcon): ComponentType =>
+  () =>
+    <Icon {...ICON_PROPS} />;
 
 function iconFor(item: NavContentNavItem): ComponentType {
   const Icon = PAGE_ICONS[item.node.spec.id];
@@ -121,7 +128,9 @@ function Brand() {
       {isOpen && (
         <span className={styles.brandName}>
           Backstage
-          <small>{typeof window === 'undefined' ? '' : window.location.host}</small>
+          <small>
+            {typeof window === 'undefined' ? '' : window.location.host}
+          </small>
         </span>
       )}
     </RouterLink>
@@ -131,11 +140,14 @@ function Brand() {
 function SearchTrigger({ onOpen }: { onOpen: () => void }) {
   const { isOpen } = useSidebarOpenState();
   const isMac =
-    typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
+    typeof navigator !== 'undefined' &&
+    /Mac|iPhone|iPad/.test(navigator.platform);
   return (
     <button
       type="button"
-      className={`${styles.searchTrigger} ${isOpen ? '' : styles.searchTriggerClosed}`}
+      className={`${styles.searchTrigger} ${
+        isOpen ? '' : styles.searchTriggerClosed
+      }`}
       onClick={onOpen}
       aria-label={`Search Backstage (${isMac ? 'Command' : 'Control'} K)`}
       aria-keyshortcuts={isMac ? 'Meta+K /' : 'Control+K /'}
@@ -175,7 +187,9 @@ function ActiveIndicator() {
     const drawer = indicator?.parentElement;
     if (!indicator || !drawer) return undefined;
     const measure = () => {
-      const active = drawer.querySelector<HTMLElement>('a[aria-current="page"]');
+      const active = drawer.querySelector<HTMLElement>(
+        'a[aria-current="page"]',
+      );
       if (!active) {
         setOffset(undefined);
         return;
@@ -187,9 +201,10 @@ function ActiveIndicator() {
       setOffset(top + (active.offsetHeight - 20) / 2);
     };
     measure();
+    document.fonts?.ready.then(measure).catch(() => undefined);
+    if (typeof ResizeObserver === 'undefined') return undefined;
     const observer = new ResizeObserver(measure);
     observer.observe(drawer);
-    document.fonts?.ready.then(measure).catch(() => undefined);
     return () => observer.disconnect();
   }, [pathname, isOpen]);
 
@@ -202,7 +217,11 @@ function ActiveIndicator() {
         offset === undefined ? '' : styles.indicatorVisible,
         placed ? styles.indicatorAnimated : '',
       ].join(' ')}
-      style={offset === undefined ? undefined : { transform: `translateY(${offset}px)` }}
+      style={
+        offset === undefined
+          ? undefined
+          : { transform: `translateY(${offset}px)` }
+      }
     />
   );
 }
@@ -223,21 +242,24 @@ function MobileOnly({ children }: { children: ReactNode }) {
 }
 
 interface Profile {
-  name: string;
+  name?: string;
   picture?: string;
 }
 
 function useProfile(): Profile {
   const identityApi = useApi(identityApiRef);
-  const [profile, setProfile] = useState<Profile>({ name: 'Settings' });
+  const [profile, setProfile] = useState<Profile>({});
   useEffect(() => {
     let active = true;
     identityApi
       .getProfileInfo()
       .then(info => {
         if (!active) return;
-        const name = info.displayName?.trim() || info.email?.split('@')[0] || 'Settings';
-        setProfile(info.picture ? { name, picture: info.picture } : { name });
+        const name = info.displayName?.trim() || info.email?.split('@')[0];
+        setProfile({
+          ...(name ? { name } : {}),
+          ...(info.picture ? { picture: info.picture } : {}),
+        });
       })
       .catch(() => undefined);
     return () => {
@@ -249,28 +271,40 @@ function useProfile(): Profile {
 
 export function initials(name: string): string {
   const parts = name.split(/\s+/).filter(Boolean);
-  const letters = parts.length > 1 ? [parts[0]![0], parts[parts.length - 1]![0]] : [name[0], name[1]];
+  const letters =
+    parts.length > 1
+      ? [parts[0]![0], parts[parts.length - 1]![0]]
+      : [name[0], name[1]];
   return letters.filter(Boolean).join('').toUpperCase();
 }
 
 function Avatar({ profile, size }: { profile: Profile; size: number }) {
   return profile.picture ? (
-    <img className={styles.avatar} src={profile.picture} alt="" width={size} height={size} />
+    <img
+      className={styles.avatar}
+      src={profile.picture}
+      alt=""
+      width={size}
+      height={size}
+    />
   ) : (
-    <span className={styles.avatar} style={{ width: size, height: size }} aria-hidden="true">
-      {initials(profile.name)}
+    <span
+      className={styles.avatar}
+      style={{ width: size, height: size }}
+      aria-hidden="true"
+    >
+      {profile.name ? initials(profile.name) : ''}
     </span>
   );
 }
 
 function AccountItem({ href }: { href: string }) {
   const profile = useProfile();
-  const firstName = profile.name.split(' ')[0] ?? profile.name;
   return (
     <SidebarItem
       to={href}
-      text={firstName}
-      aria-label={`Settings for ${profile.name}`}
+      text={profile.name?.split(' ')[0] ?? 'Settings'}
+      aria-label={profile.name ? `Settings for ${profile.name}` : 'Settings'}
       icon={() => <Avatar profile={profile} size={24} />}
     />
   );
@@ -288,13 +322,16 @@ function CollapseItem() {
     <SidebarItem
       icon={asIcon(PanelLeft)}
       text={isPinned ? 'Collapse' : 'Expand'}
-      aria-pressed={!isPinned}
       onClick={toggleSidebarPinState}
     />
   );
 }
 
-function MobileTopBar({ title, onSearch, settingsHref }: {
+function MobileTopBar({
+  title,
+  onSearch,
+  settingsHref,
+}: {
   title: string;
   onSearch?: () => void;
   settingsHref: string;
@@ -307,11 +344,20 @@ function MobileTopBar({ title, onSearch, settingsHref }: {
       </span>
       <span className={styles.topBarTitle}>{title}</span>
       {onSearch && (
-        <button type="button" className={styles.iconButton} aria-label="Search" onClick={onSearch}>
+        <button
+          type="button"
+          className={styles.iconButton}
+          aria-label="Search"
+          onClick={onSearch}
+        >
           <Search {...ICON_PROPS} />
         </button>
       )}
-      <RouterLink to={settingsHref} className={styles.iconButton} aria-label="Account settings">
+      <RouterLink
+        to={settingsHref}
+        className={styles.iconButton}
+        aria-label="Account settings"
+      >
         <Avatar profile={profile} size={28} />
       </RouterLink>
     </header>
@@ -342,7 +388,10 @@ function EmberSidebar({ navItems }: NavContentComponentProps) {
   const settings = navItems.take('page:user-settings');
   const settingsHref = settings?.href ?? '/settings';
 
-  const item = (navItem: NavContentNavItem | undefined, extra?: { badge?: number }) => {
+  const item = (
+    navItem: NavContentNavItem | undefined,
+    extra?: { badge?: number },
+  ) => {
     if (!navItem) return null;
     const Icon = PAGE_ICONS[navItem.node.spec.id];
     const badge = extra?.badge;
@@ -351,8 +400,14 @@ function EmberSidebar({ navItems }: NavContentComponentProps) {
         key={navItem.node.spec.id}
         to={navItem.href}
         text={navItem.title}
-        aria-label={badge ? `${navItem.title}, ${needsYouLabel(badge)}` : navItem.title}
-        icon={Icon ? () => <BadgedIcon Icon={Icon} count={badge} /> : iconFor(navItem)}
+        aria-label={
+          badge ? `${navItem.title}, ${needsYouLabel(badge)}` : navItem.title
+        }
+        icon={
+          Icon
+            ? () => <BadgedIcon Icon={Icon} count={badge} />
+            : iconFor(navItem)
+        }
       >
         {!!badge && (
           <span className={styles.badge} aria-hidden="true">
@@ -369,10 +424,19 @@ function EmberSidebar({ navItems }: NavContentComponentProps) {
   const apis = navItems.take('page:api-docs');
   const docs = navItems.take('page:techdocs');
   const create = navItems.take('page:scaffolder');
-  const rest = [...navItems.rest()].sort((a, b) => a.title.localeCompare(b.title));
-  const all = [home, catalog, agents, apis, docs, create, settings, ...rest].filter(
-    (navItem): navItem is NavContentNavItem => !!navItem,
+  const rest = [...navItems.rest()].sort((a, b) =>
+    a.title.localeCompare(b.title),
   );
+  const all = [
+    home,
+    catalog,
+    agents,
+    apis,
+    docs,
+    create,
+    settings,
+    ...rest,
+  ].filter((navItem): navItem is NavContentNavItem => !!navItem);
 
   return (
     <>
@@ -386,17 +450,32 @@ function EmberSidebar({ navItems }: NavContentComponentProps) {
       <Sidebar disableExpandOnHover>
         <Brand />
         {hasSearch && (
-          <SidebarGroup label="Search" icon={<Search {...ICON_PROPS} />} to="/search" priority={2}>
+          <SidebarGroup
+            label="Search"
+            icon={<Search {...ICON_PROPS} />}
+            to="/search"
+            priority={2}
+          >
             <SearchTrigger onOpen={toggleModal} />
           </SidebarGroup>
         )}
         {home && (
-          <SidebarGroup label={home.title} icon={<House {...ICON_PROPS} />} to={home.href} priority={5}>
+          <SidebarGroup
+            label={home.title}
+            icon={<House {...ICON_PROPS} />}
+            to={home.href}
+            priority={5}
+          >
             {item(home)}
           </SidebarGroup>
         )}
         {catalog && (
-          <SidebarGroup label={catalog.title} icon={<LayoutGrid {...ICON_PROPS} />} to={catalog.href} priority={4}>
+          <SidebarGroup
+            label={catalog.title}
+            icon={<LayoutGrid {...ICON_PROPS} />}
+            to={catalog.href}
+            priority={4}
+          >
             {item(catalog)}
           </SidebarGroup>
         )}
@@ -410,7 +489,11 @@ function EmberSidebar({ navItems }: NavContentComponentProps) {
             {item(agents, { badge: needsYou })}
           </SidebarGroup>
         )}
-        <SidebarGroup label="More" icon={<Ellipsis {...ICON_PROPS} />} priority={1}>
+        <SidebarGroup
+          label="More"
+          icon={<Ellipsis {...ICON_PROPS} />}
+          priority={1}
+        >
           {item(apis)}
           {item(docs)}
           {item(create)}
@@ -437,7 +520,9 @@ function BadgedIconMobile({ count }: { count?: number }) {
     <span className={styles.iconWrap}>
       <Bot {...ICON_PROPS} />
       {!!count && <span className={styles.dot} aria-hidden="true" />}
-      {!!count && <span className={styles.srOnly}>{`, ${needsYouLabel(count)}`}</span>}
+      {!!count && (
+        <span className={styles.srOnly}>{`, ${needsYouLabel(count)}`}</span>
+      )}
     </span>
   );
 }

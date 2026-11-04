@@ -1,13 +1,30 @@
 import { useId, type ReactNode } from 'react';
 import { githubAuthApiRef, useApi } from '@backstage/core-plugin-api';
-import { CircleAlert, RefreshCw, TriangleAlert, type LucideIcon } from 'lucide-react';
+import {
+  CircleAlert,
+  RefreshCw,
+  TriangleAlert,
+  type LucideIcon,
+} from 'lucide-react';
 import type { GithubFailure } from '../api/errors';
 import { untilLabel, updatedLabel, ago } from '../logic/time';
 import styles from './Home.module.css';
 
-export const ICON = { size: 18, strokeWidth: 1.75, 'aria-hidden': true } as const;
-export const ICON_SM = { size: 15, strokeWidth: 1.75, 'aria-hidden': true } as const;
-export const ICON_XS = { size: 13, strokeWidth: 1.75, 'aria-hidden': true } as const;
+export const ICON = {
+  size: 18,
+  strokeWidth: 1.75,
+  'aria-hidden': true,
+} as const;
+export const ICON_SM = {
+  size: 15,
+  strokeWidth: 1.75,
+  'aria-hidden': true,
+} as const;
+export const ICON_XS = {
+  size: 13,
+  strokeWidth: 1.75,
+  'aria-hidden': true,
+} as const;
 
 export function WidgetFrame(props: {
   id: string;
@@ -38,12 +55,19 @@ export function WidgetFrame(props: {
         <h2 id={headingId} className={styles.title}>
           {props.title}
         </h2>
-        <span className={styles.count} aria-label={props.count === undefined ? 'Loading' : `${props.count} open`}>
+        <span
+          className={styles.count}
+          aria-label={
+            props.count === undefined ? 'Loading' : `${props.count} open`
+          }
+        >
           {props.count ?? '…'}
         </span>
         <span className={styles.spacer} />
         <span className={styles.updated} aria-live="off">
-          {props.loading ? 'Refreshing…' : updatedLabel(props.fetchedAt, props.now)}
+          {props.loading
+            ? 'Refreshing…'
+            : updatedLabel(props.fetchedAt, props.now)}
         </span>
         <button
           type="button"
@@ -68,13 +92,27 @@ export function Skeleton({ rows }: { rows: number }) {
   return (
     <div aria-hidden="true">
       {Array.from({ length: rows }, (_, i) => (
-        <div key={i} className={styles.skelRow} style={{ opacity: 1 - i * 0.12 }}>
-          <div className={styles.skel} style={{ width: 18, height: 18, borderRadius: '50%' }} />
+        <div
+          key={i}
+          className={styles.skelRow}
+          style={{ opacity: 1 - i * 0.12 }}
+        >
+          <div
+            className={styles.skel}
+            style={{ width: 18, height: 18, borderRadius: '50%' }}
+          />
           <div style={{ flex: 1 }}>
-            <div className={styles.skel} style={{ height: 12, width: `${70 - (i % 3) * 14}%` }} />
             <div
               className={styles.skel}
-              style={{ height: 10, width: `${34 + (i % 2) * 10}%`, marginTop: 8 }}
+              style={{ height: 12, width: `${70 - (i % 3) * 14}%` }}
+            />
+            <div
+              className={styles.skel}
+              style={{
+                height: 10,
+                width: `${34 + (i % 2) * 10}%`,
+                marginTop: 8,
+              }}
             />
           </div>
         </div>
@@ -92,7 +130,10 @@ export function StateMessage(props: {
 }) {
   const { Icon } = props;
   return (
-    <div className={`${styles.state} ${props.error ? styles.stateError : ''}`} role={props.error ? 'alert' : undefined}>
+    <div
+      className={`${styles.state} ${props.error ? styles.stateError : ''}`}
+      role={props.error ? 'alert' : undefined}
+    >
       <span className={styles.halo}>
         <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
       </span>
@@ -103,7 +144,10 @@ export function StateMessage(props: {
   );
 }
 
-function describe(failure: GithubFailure, now: number): { title: string; text: ReactNode } {
+function describe(
+  failure: GithubFailure,
+  now: number,
+): { title: string; text: ReactNode } {
   switch (failure.kind) {
     case 'rate-limited':
       return {
@@ -111,7 +155,9 @@ function describe(failure: GithubFailure, now: number): { title: string; text: R
         text: (
           <>
             The API returned <code>{failure.status} rate limit exceeded</code>.
-            {failure.resetAt ? ` It resets ${untilLabel(failure.resetAt, now)}.` : ''}
+            {failure.resetAt
+              ? ` It resets ${untilLabel(failure.resetAt, now)}.`
+              : ''}
           </>
         ),
       };
@@ -134,7 +180,8 @@ function describe(failure: GithubFailure, now: number): { title: string; text: R
 
 function useRetry(failure: GithubFailure, retry: () => void) {
   const githubAuthApi = useApi(githubAuthApiRef);
-  if (failure.kind !== 'unauthorized') return { label: 'Try again', run: retry };
+  if (failure.kind !== 'unauthorized')
+    return { label: 'Try again', run: retry };
   return {
     label: 'Sign in to GitHub',
     run: () => {
@@ -175,6 +222,14 @@ export function ErrorState({
   );
 }
 
+function shortReason(failure: GithubFailure, now: number): string {
+  if (failure.kind === 'unauthorized') return 'GitHub session expired';
+  if (failure.kind === 'unavailable') return 'GitHub did not answer';
+  return failure.resetAt
+    ? `Rate limited, resets ${untilLabel(failure.resetAt, now)}`
+    : 'Rate limited';
+}
+
 /** A refresh failed, but the cached snapshot stays on screen. */
 export function StaleBanner({
   failure,
@@ -188,12 +243,7 @@ export function StaleBanner({
   onRetry: () => void;
 }) {
   const retry = useRetry(failure, onRetry);
-  const reason =
-    failure.kind === 'rate-limited'
-      ? `Rate limited${failure.resetAt ? `, resets ${untilLabel(failure.resetAt, now)}` : ''}`
-      : failure.kind === 'unauthorized'
-      ? 'GitHub session expired'
-      : 'GitHub did not answer';
+  const reason = shortReason(failure, now);
   return (
     <div className={styles.banner} role="status">
       <CircleAlert {...ICON_SM} />

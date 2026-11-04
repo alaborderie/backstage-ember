@@ -129,7 +129,11 @@ const components: UnifiedThemeOptions['components'] = {
   },
   MuiDialog: {
     styleOverrides: {
-      paper: { backgroundColor: c.surface2, boxShadow: e.e3, borderRadius: r.xl },
+      paper: {
+        backgroundColor: c.surface2,
+        boxShadow: e.e3,
+        borderRadius: r.xl,
+      },
     },
   },
   MuiBackdrop: {
@@ -198,7 +202,11 @@ const components: UnifiedThemeOptions['components'] = {
         padding: '6px 0 4px',
         color: c.fg3,
         borderRadius: r.md,
-        '&$selected': { color: c.fg1, paddingTop: 6, '& svg': { color: c.emberFg } },
+        '&$selected': {
+          color: c.fg1,
+          paddingTop: 6,
+          '& svg': { color: c.emberFg },
+        },
       },
       label: {
         '&&': { display: 'block' },

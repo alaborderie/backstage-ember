@@ -24,7 +24,9 @@ export interface GithubData<T> {
 function parseSnapshot<T>(value: unknown): Snapshot<T> | undefined {
   if (!value || typeof value !== 'object') return undefined;
   const { items, fetchedAt } = value as Partial<Snapshot<T>>;
-  return Array.isArray(items) && typeof fetchedAt === 'number' ? { items, fetchedAt } : undefined;
+  return Array.isArray(items) && typeof fetchedAt === 'number'
+    ? { items, fetchedAt }
+    : undefined;
 }
 
 /**
@@ -33,9 +35,15 @@ function parseSnapshot<T>(value: unknown): Snapshot<T> | undefined {
  * window regains focus. Components that use the same key share updates
  * through the storage observable.
  */
-export function useGithubData<T>(key: string, load: () => Promise<T[]>): GithubData<T> {
+export function useGithubData<T>(
+  key: string,
+  load: () => Promise<T[]>,
+): GithubData<T> {
   const storageApi = useApi(storageApiRef);
-  const storage = useMemo(() => storageApi.forBucket(STORAGE_BUCKET), [storageApi]);
+  const storage = useMemo(
+    () => storageApi.forBucket(STORAGE_BUCKET),
+    [storageApi],
+  );
   const [snapshot, setSnapshot] = useState<Snapshot<T> | undefined>(() =>
     parseSnapshot<T>(storage.snapshot(key).value),
   );
@@ -67,7 +75,9 @@ export function useGithubData<T>(key: string, load: () => Promise<T[]>): GithubD
         setSnapshot(next);
         setFailure(undefined);
       }
-      await storage.set(key, next as unknown as JsonValue).catch(() => undefined);
+      await storage
+        .set(key, next as unknown as JsonValue)
+        .catch(() => undefined);
     } catch (error) {
       if (current()) setFailure(toGithubFailure(error));
     } finally {
@@ -77,7 +87,8 @@ export function useGithubData<T>(key: string, load: () => Promise<T[]>): GithubD
 
   useEffect(() => {
     const refreshIfStale = () => {
-      const fetchedAt = parseSnapshot<T>(storage.snapshot(key).value)?.fetchedAt ?? 0;
+      const fetchedAt =
+        parseSnapshot<T>(storage.snapshot(key).value)?.fetchedAt ?? 0;
       if (Date.now() - fetchedAt > STALE_MS) refresh();
     };
     refreshIfStale();

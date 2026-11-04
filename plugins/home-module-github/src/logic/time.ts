@@ -15,7 +15,10 @@ export function ago(iso: string | number, now: number): string {
 }
 
 /** "Updated 2 min ago", for the widget header. */
-export function updatedLabel(fetchedAt: number | undefined, now: number): string {
+export function updatedLabel(
+  fetchedAt: number | undefined,
+  now: number,
+): string {
   if (fetchedAt === undefined) return 'Not loaded yet';
   const minutes = Math.floor((now - fetchedAt) / 60_000);
   if (minutes < 1) return 'Updated just now';
@@ -28,7 +31,9 @@ export function updatedLabel(fetchedAt: number | undefined, now: number): string
 /** "in 11 minutes", for a rate-limit reset. */
 export function untilLabel(at: number, now: number): string {
   const minutes = Math.max(1, Math.ceil((at - now) / 60_000));
-  return minutes < 60 ? `in ${minutes} minute${minutes === 1 ? '' : 's'}` : `in ${Math.ceil(minutes / 60)} h`;
+  return minutes < 60
+    ? `in ${minutes} minute${minutes === 1 ? '' : 's'}`
+    : `in ${Math.ceil(minutes / 60)} h`;
 }
 
 export function greeting(date: Date): string {

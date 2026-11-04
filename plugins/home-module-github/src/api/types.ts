@@ -59,7 +59,9 @@ export interface GithubHomeApi {
   /** Open issues in repositories owned by `owner`, or by the signed-in user. */
   getOpenIssues(options: { owner?: string }): Promise<GithubIssue[]>;
   /** Open pull requests the signed-in user opened or must review. */
-  getPullRequests(options: { scope: PullRequestScope }): Promise<GithubPullRequest[]>;
+  getPullRequests(options: {
+    scope: PullRequestScope;
+  }): Promise<GithubPullRequest[]>;
 }
 
 /** @public */

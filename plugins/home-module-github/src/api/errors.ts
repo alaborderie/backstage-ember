@@ -16,11 +16,15 @@ export class GithubHomeError extends Error {
 }
 
 /** Parses `x-ratelimit-reset` (epoch seconds) or `retry-after` (seconds). */
-export function rateLimitResetAt(headers: Headers, now: number): number | undefined {
+export function rateLimitResetAt(
+  headers: Headers,
+  now: number,
+): number | undefined {
   const reset = Number(headers.get('x-ratelimit-reset'));
   if (Number.isFinite(reset) && reset > 0) return reset * 1000;
   const retryAfter = Number(headers.get('retry-after'));
-  if (Number.isFinite(retryAfter) && retryAfter > 0) return now + retryAfter * 1000;
+  if (Number.isFinite(retryAfter) && retryAfter > 0)
+    return now + retryAfter * 1000;
   return undefined;
 }
 

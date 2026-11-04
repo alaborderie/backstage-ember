@@ -27,7 +27,10 @@ import {
 } from '../logic/issues';
 import { ago } from '../logic/time';
 import { useGithubData } from '../hooks/useGithubData';
-import { parseStringList, usePersistentState } from '../hooks/usePersistentState';
+import {
+  parseStringList,
+  usePersistentState,
+} from '../hooks/usePersistentState';
 import { useNow } from '../hooks/useNow';
 import {
   ErrorState,
@@ -54,13 +57,26 @@ export const ISSUES_WIDGET_ID = 'github-open-issues';
 
 const humanize = (label: string) => label.replace(/[-_]/g, ' ');
 
-function IssueRow({ issue, index, now }: { issue: GithubIssue; index: number; now: number }) {
+function IssueRow({
+  issue,
+  index,
+  now,
+}: {
+  issue: GithubIssue;
+  index: number;
+  now: number;
+}) {
   const extra = issue.labels.length - 2;
   return (
     <li className={styles.row} style={{ '--i': index } as React.CSSProperties}>
       <CircleDot {...ICON_SM} />
       <div className={styles.rowMain}>
-        <a className={styles.rowTitle} href={issue.url} target="_blank" rel="noopener noreferrer">
+        <a
+          className={styles.rowTitle}
+          href={issue.url}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           {issue.title}
         </a>
         <div className={styles.rowMeta}>
@@ -72,9 +88,14 @@ function IssueRow({ issue, index, now }: { issue: GithubIssue; index: number; no
               {label.name}
             </span>
           ))}
-          {extra > 0 && <span aria-label={`${extra} more labels`}>+{extra}</span>}
+          {extra > 0 && (
+            <span aria-label={`${extra} more labels`}>+{extra}</span>
+          )}
           {issue.comments > 0 && (
-            <span className={styles.label} aria-label={`${issue.comments} comments`}>
+            <span
+              className={styles.label}
+              aria-label={`${issue.comments} comments`}
+            >
               <MessageSquare {...ICON_XS} />
               {issue.comments}
             </span>
@@ -132,13 +153,20 @@ function Group(props: {
         )}
         {repository.language && (
           <span className={styles.meta}>
-            <i className={styles.dot} style={{ background: repository.language.color }} aria-hidden="true" />
+            <i
+              className={styles.dot}
+              style={{ background: repository.language.color }}
+              aria-hidden="true"
+            />
             {repository.language.name}
           </span>
         )}
         <span className={styles.spacer} />
         <span className={styles.meta}>{ago(group.updatedAt, now)}</span>
-        <span className={styles.count} aria-label={`${group.issues.length} issues`}>
+        <span
+          className={styles.count}
+          aria-label={`${group.issues.length} issues`}
+        >
           {group.issues.length}
         </span>
       </button>
@@ -167,10 +195,16 @@ function Group(props: {
 }
 
 /** The Open issues home widget. @public */
-export function IssuesWidget({ owner, hiddenLabels = ['on-hold'] }: IssuesWidgetProps) {
+export function IssuesWidget({
+  owner,
+  hiddenLabels = ['on-hold'],
+}: IssuesWidgetProps) {
   const api = useApi(githubHomeApiRef);
   const now = useNow();
-  const load = useCallback(() => api.getOpenIssues(owner ? { owner } : {}), [api, owner]);
+  const load = useCallback(
+    () => api.getOpenIssues(owner ? { owner } : {}),
+    [api, owner],
+  );
   const { snapshot, loading, failure, refresh } = useGithubData<GithubIssue>(
     `issues:${owner ?? '@viewer'}`,
     load,
@@ -179,7 +213,10 @@ export function IssuesWidget({ owner, hiddenLabels = ['on-hold'] }: IssuesWidget
   const [hideLabeled, setHideLabeled] = useState(true);
   const [quietOpen, setQuietOpen] = useState(false);
   const [groupBy, setGroupBy] = useState<GroupBy>('repository');
-  const [storedExpanded, setExpanded] = usePersistentState('issues.expanded', parseStringList);
+  const [storedExpanded, setExpanded] = usePersistentState(
+    'issues.expanded',
+    parseStringList,
+  );
 
   const grouping = useMemo(
     () =>
@@ -235,7 +272,11 @@ export function IssuesWidget({ owner, hiddenLabels = ['on-hold'] }: IssuesWidget
         <label className={styles.srOnly} htmlFor={selectId}>
           Group by
         </label>
-        <select id={selectId} value={groupBy} onChange={event => setGroupBy(event.target.value as GroupBy)}>
+        <select
+          id={selectId}
+          value={groupBy}
+          onChange={event => setGroupBy(event.target.value as GroupBy)}
+        >
           <option value="repository">By repository</option>
           <option value="system">By catalog System</option>
           <option value="project">By GitHub Project</option>
@@ -247,7 +288,8 @@ export function IssuesWidget({ owner, hiddenLabels = ['on-hold'] }: IssuesWidget
 
   const renderBody = () => {
     if (!snapshot) {
-      if (failure) return <ErrorState failure={failure} now={now} onRetry={refresh} />;
+      if (failure)
+        return <ErrorState failure={failure} now={now} onRetry={refresh} />;
       return <Skeleton rows={7} />;
     }
     if (!snapshot.items.length) {
@@ -260,14 +302,16 @@ export function IssuesWidget({ owner, hiddenLabels = ['on-hold'] }: IssuesWidget
     if (groupBy === 'system') {
       return (
         <StateMessage Icon={LayoutGrid} title="No catalog Systems yet">
-          Grouping by System needs <code>spec.system</code> on your catalog Components.
+          Grouping by System needs <code>spec.system</code> on your catalog
+          Components.
         </StateMessage>
       );
     }
     if (groupBy === 'project') {
       return (
         <StateMessage Icon={Lock} title="GitHub Projects need one more scope">
-          Reading Projects (v2) needs the <code>read:project</code> permission on sign-in.
+          Reading Projects (v2) needs the <code>read:project</code> permission
+          on sign-in.
         </StateMessage>
       );
     }
@@ -282,9 +326,15 @@ export function IssuesWidget({ owner, hiddenLabels = ['on-hold'] }: IssuesWidget
       return (
         <StateMessage
           Icon={CircleSlash}
-          title={`Every open issue is labeled ${hiddenLabels.map(humanize).join(', ')}`}
+          title={`Every open issue is labeled ${hiddenLabels
+            .map(humanize)
+            .join(', ')}`}
           action={
-            <button type="button" className={styles.button} onClick={() => setHideLabeled(false)}>
+            <button
+              type="button"
+              className={styles.button}
+              onClick={() => setHideLabeled(false)}
+            >
               Show them
             </button>
           }
@@ -293,7 +343,10 @@ export function IssuesWidget({ owner, hiddenLabels = ['on-hold'] }: IssuesWidget
         </StateMessage>
       );
     }
-    const quietIssues = grouping.quiet.reduce((sum, group) => sum + group.issues.length, 0);
+    const quietIssues = grouping.quiet.reduce(
+      (sum, group) => sum + group.issues.length,
+      0,
+    );
     const renderGroup = (group: IssueGroup) => (
       <Group
         key={group.key}
@@ -318,14 +371,19 @@ export function IssuesWidget({ owner, hiddenLabels = ['on-hold'] }: IssuesWidget
             >
               <ChevronRight {...ICON_SM} className={styles.chev} />
               <strong>
-                {grouping.quiet.length} quiet {grouping.quiet.length === 1 ? 'project' : 'projects'}
+                {grouping.quiet.length} quiet{' '}
+                {grouping.quiet.length === 1 ? 'project' : 'projects'}
               </strong>
               <span>
                 no activity in {QUIET_AFTER_DAYS} days · {quietIssues}{' '}
                 {quietIssues === 1 ? 'issue' : 'issues'}
               </span>
             </button>
-            {quietOpen && <div id="github-quiet-projects">{grouping.quiet.map(renderGroup)}</div>}
+            {quietOpen && (
+              <div id="github-quiet-projects">
+                {grouping.quiet.map(renderGroup)}
+              </div>
+            )}
           </>
         )}
       </>
@@ -347,7 +405,12 @@ export function IssuesWidget({ owner, hiddenLabels = ['on-hold'] }: IssuesWidget
       tools={tools}
       banner={
         snapshot && failure ? (
-          <StaleBanner failure={failure} fetchedAt={snapshot.fetchedAt} now={now} onRetry={refresh} />
+          <StaleBanner
+            failure={failure}
+            fetchedAt={snapshot.fetchedAt}
+            now={now}
+            onRetry={refresh}
+          />
         ) : undefined
       }
     >

@@ -19,7 +19,10 @@ import ExtensionIcon from '@material-ui/icons/Extension';
 function StubPage({ title }: { title: string }) {
   return (
     <Page themeId="tool">
-      <Header title={title} subtitle="A fictional page that shows the theme on core-components." />
+      <Header
+        title={title}
+        subtitle="A fictional page that shows the theme on core-components."
+      />
       <Content>
         <ContentHeader title="Entities">
           <Button variant="contained" color="primary">
@@ -60,28 +63,56 @@ export const devPagePlugins = [
 ];
 
 const fictionalAgents = [
-  { id: 'ag_0a1b2c3d4e5f', title: 'Pick a storage layout', repo: 'acme/garden-app', status: 'needs_input' },
+  {
+    id: 'ag_0a1b2c3d4e5f',
+    title: 'Pick a storage layout',
+    repo: 'acme/garden-app',
+    status: 'needs_input',
+  },
 ];
 
 const fictionalDocuments = [
-  { title: 'acme-api', text: 'Orders and webhooks service', location: '/catalog/default/component/acme-api', type: 'software-catalog' },
-  { title: 'garden-app', text: 'Garden planner web app', location: '/catalog/default/component/garden-app', type: 'software-catalog' },
-  { title: 'Local development', text: 'How to run lantern-docs locally', location: '/docs/default/component/lantern-docs', type: 'techdocs' },
+  {
+    title: 'acme-api',
+    text: 'Orders and webhooks service',
+    location: '/catalog/default/component/acme-api',
+    type: 'software-catalog',
+  },
+  {
+    title: 'garden-app',
+    text: 'Garden planner web app',
+    location: '/catalog/default/component/garden-app',
+    type: 'software-catalog',
+  },
+  {
+    title: 'Local development',
+    text: 'How to run lantern-docs locally',
+    location: '/docs/default/component/lantern-docs',
+    type: 'techdocs',
+  },
 ];
 
 function searchResponse(url: URL) {
   const term = (url.searchParams.get('term') ?? '').toLowerCase();
   const results = fictionalDocuments
-    .filter(doc => !term || `${doc.title} ${doc.text}`.toLowerCase().includes(term))
+    .filter(
+      doc => !term || `${doc.title} ${doc.text}`.toLowerCase().includes(term),
+    )
     .map(({ type, ...document }) => ({ type, document }));
-  return new Response(JSON.stringify({ results, numberOfResults: results.length }), {
-    status: 200,
-    headers: { 'content-type': 'application/json' },
-  });
+  return new Response(
+    JSON.stringify({ results, numberOfResults: results.length }),
+    {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    },
+  );
 }
 
 async function devFetch(input: RequestInfo | URL, init?: RequestInit) {
-  const url = new URL(String(input instanceof Request ? input.url : input), window.location.href);
+  const url = new URL(
+    String(input instanceof Request ? input.url : input),
+    window.location.href,
+  );
   if (url.pathname.endsWith('/api/search/query')) return searchResponse(url);
   if (url.pathname.endsWith('/api/cloud-agents/agents')) {
     return new Response(JSON.stringify(fictionalAgents), {
@@ -99,7 +130,11 @@ export const devFetchModule = createFrontendModule({
     ApiBlueprint.make({
       name: 'fetch',
       params: defineParams =>
-        defineParams({ api: fetchApiRef, deps: {}, factory: () => ({ fetch: devFetch }) }),
+        defineParams({
+          api: fetchApiRef,
+          deps: {},
+          factory: () => ({ fetch: devFetch }),
+        }),
     }),
   ],
 });

@@ -10,7 +10,11 @@ import { issueFixtures, pullRequestFixtures } from './fixtures';
 const PAGE_SIZE = 25;
 const LATE_PR_AFTER_MS = 16_000;
 
-const json = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
+const json = (
+  body: unknown,
+  status = 200,
+  headers: Record<string, string> = {},
+) =>
   new Response(JSON.stringify(body), {
     status,
     headers: { 'content-type': 'application/json', ...headers },
@@ -29,7 +33,8 @@ export function installGithubMock() {
 
   window.fetch = async (input, init) => {
     const url = String(input instanceof Request ? input.url : input);
-    if (!url.startsWith('https://api.github.com/graphql')) return realFetch(input, init);
+    if (!url.startsWith('https://api.github.com/graphql'))
+      return realFetch(input, init);
 
     await new Promise(resolve => setTimeout(resolve, 450));
     if (mode === 'loading') return new Promise<Response>(() => undefined);
@@ -38,7 +43,9 @@ export function installGithubMock() {
     if (mode === 'ratelimit') {
       return json({ message: 'API rate limit exceeded' }, 403, {
         'x-ratelimit-remaining': '0',
-        'x-ratelimit-reset': String(Math.floor((Date.now() + 11 * 60_000) / 1000)),
+        'x-ratelimit-reset': String(
+          Math.floor((Date.now() + 11 * 60_000) / 1000),
+        ),
       });
     }
 
@@ -46,23 +53,28 @@ export function installGithubMock() {
       query: string;
       variables: { q?: string; cursor?: string | null };
     };
-    if (query.includes('viewer')) return json({ data: { viewer: { login: 'acme' } } });
+    if (query.includes('viewer'))
+      return json({ data: { viewer: { login: 'acme' } } });
 
     const now = Date.now();
     const q = variables.q ?? '';
-    const all =
-      mode === 'empty'
-        ? []
-        : q.includes('is:issue')
+    const scope = q.includes('review-requested') ? 'review' : 'authored';
+    let all: unknown[] = [];
+    if (mode !== 'empty') {
+      all = q.includes('is:issue')
         ? issueFixtures(now)
-        : pullRequestFixtures(q.includes('review-requested') ? 'review' : 'authored', now, startedAt + LATE_PR_AFTER_MS);
+        : pullRequestFixtures(scope, now, startedAt + LATE_PR_AFTER_MS);
+    }
     const start = Number(variables.cursor ?? 0);
     const nodes = all.slice(start, start + PAGE_SIZE);
     const next = start + PAGE_SIZE;
     return json({
       data: {
         search: {
-          pageInfo: { hasNextPage: next < all.length, endCursor: next < all.length ? String(next) : null },
+          pageInfo: {
+            hasNextPage: next < all.length,
+            endCursor: next < all.length ? String(next) : null,
+          },
           nodes,
         },
       },

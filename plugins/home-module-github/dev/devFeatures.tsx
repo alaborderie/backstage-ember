@@ -8,7 +8,7 @@ import {
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
 import { Content, Header, Page } from '@backstage/core-components';
-import ExtensionIcon from '@material-ui/icons/Extension';
+import { Puzzle } from 'lucide-react';
 
 const stub = (pluginId: string, path: string, title: string) =>
   createFrontendPlugin({
@@ -18,12 +18,15 @@ const stub = (pluginId: string, path: string, title: string) =>
         params: {
           path,
           title,
-          icon: <ExtensionIcon />,
+          icon: <Puzzle size={18} strokeWidth={1.75} />,
           routeRef: createRouteRef(),
           noHeader: true,
           loader: async () => (
             <Page themeId="tool">
-              <Header title={title} subtitle="A fictional page in the dev app." />
+              <Header
+                title={title}
+                subtitle="A fictional page in the dev app."
+              />
               <Content>Nothing here in the dev app.</Content>
             </Page>
           ),
@@ -39,36 +42,83 @@ export const devPagePlugins = [
 ];
 
 const fictionalAgents = [
-  { id: 'ag_0a1b2c3d4e5f', title: 'Pick a storage layout', repo: 'acme/garden-app', status: 'needs_input' },
-  { id: 'ag_5e7d9c1a2b3f', title: 'Paginate orders', repo: 'acme/acme-api', status: 'running' },
-  { id: 'ag_7c4a2e9f0b6d', title: 'Fish completions', repo: 'acme/orbit-cli', status: 'queued' },
-  { id: 'ag_9b2e4f6a8c1d', title: 'Watering schedule', repo: 'acme/garden-app', status: 'succeeded' },
+  {
+    id: 'ag_0a1b2c3d4e5f',
+    title: 'Pick a storage layout',
+    repo: 'acme/garden-app',
+    status: 'needs_input',
+  },
+  {
+    id: 'ag_5e7d9c1a2b3f',
+    title: 'Paginate orders',
+    repo: 'acme/acme-api',
+    status: 'running',
+  },
+  {
+    id: 'ag_7c4a2e9f0b6d',
+    title: 'Fish completions',
+    repo: 'acme/orbit-cli',
+    status: 'queued',
+  },
+  {
+    id: 'ag_9b2e4f6a8c1d',
+    title: 'Watering schedule',
+    repo: 'acme/garden-app',
+    status: 'succeeded',
+  },
 ];
 
 const fictionalDocuments = [
-  { title: 'acme-api', text: 'Orders and webhooks service', location: '/catalog/default/component/acme-api', type: 'software-catalog' },
-  { title: 'garden-app', text: 'Garden planner web app', location: '/catalog/default/component/garden-app', type: 'software-catalog' },
-  { title: 'Local development', text: 'How to run lantern-docs locally', location: '/docs/default/component/lantern-docs', type: 'techdocs' },
+  {
+    title: 'acme-api',
+    text: 'Orders and webhooks service',
+    location: '/catalog/default/component/acme-api',
+    type: 'software-catalog',
+  },
+  {
+    title: 'garden-app',
+    text: 'Garden planner web app',
+    location: '/catalog/default/component/garden-app',
+    type: 'software-catalog',
+  },
+  {
+    title: 'Local development',
+    text: 'How to run lantern-docs locally',
+    location: '/docs/default/component/lantern-docs',
+    type: 'techdocs',
+  },
 ];
 
 function searchResponse(url: URL) {
   const term = (url.searchParams.get('term') ?? '').toLowerCase();
   const results = fictionalDocuments
-    .filter(doc => !term || `${doc.title} ${doc.text}`.toLowerCase().includes(term))
+    .filter(
+      doc => !term || `${doc.title} ${doc.text}`.toLowerCase().includes(term),
+    )
     .map(({ type, ...document }) => ({ type, document }));
-  return new Response(JSON.stringify({ results, numberOfResults: results.length }), {
-    status: 200,
-    headers: { 'content-type': 'application/json' },
-  });
+  return new Response(
+    JSON.stringify({ results, numberOfResults: results.length }),
+    {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    },
+  );
 }
 
 async function devFetch(input: RequestInfo | URL, init?: RequestInit) {
-  const url = new URL(String(input instanceof Request ? input.url : input), window.location.href);
+  const url = new URL(
+    String(input instanceof Request ? input.url : input),
+    window.location.href,
+  );
   if (url.pathname.endsWith('/api/search/query')) return searchResponse(url);
   if (url.pathname.endsWith('/api/cloud-agents/agents')) {
     const status = url.searchParams.get('status');
     return new Response(
-      JSON.stringify(status ? fictionalAgents.filter(a => a.status === status) : fictionalAgents),
+      JSON.stringify(
+        status
+          ? fictionalAgents.filter(a => a.status === status)
+          : fictionalAgents,
+      ),
       { status: 200, headers: { 'content-type': 'application/json' } },
     );
   }
@@ -82,7 +132,11 @@ export const devAppModule = createFrontendModule({
     ApiBlueprint.make({
       name: 'fetch',
       params: defineParams =>
-        defineParams({ api: fetchApiRef, deps: {}, factory: () => ({ fetch: devFetch }) }),
+        defineParams({
+          api: fetchApiRef,
+          deps: {},
+          factory: () => ({ fetch: devFetch }),
+        }),
     }),
     ApiBlueprint.make({
       name: 'github-auth',

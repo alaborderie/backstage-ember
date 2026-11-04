@@ -7,16 +7,21 @@ import {
 
 const POLL_MS = 30_000;
 
+function agentList(body: unknown): unknown[] | undefined {
+  if (Array.isArray(body)) return body;
+  const items =
+    body && typeof body === 'object'
+      ? (body as { items?: unknown }).items
+      : undefined;
+  return Array.isArray(items) ? items : undefined;
+}
+
 /**
  * Reads the number of agents waiting for the user from a `GET /agents`
  * response. Anything other than a list of agents counts as unknown.
  */
 export function countNeedsInput(body: unknown): number | undefined {
-  const list = Array.isArray(body)
-    ? body
-    : body && typeof body === 'object' && Array.isArray((body as { items?: unknown }).items)
-    ? (body as { items: unknown[] }).items
-    : undefined;
+  const list = agentList(body);
   if (!list) return undefined;
   return list.filter(
     agent =>
@@ -45,14 +50,18 @@ export function useNeedsYouCount(): number | undefined {
       if (stopped || document.visibilityState === 'hidden') return;
       try {
         const base = await discoveryApi.getBaseUrl('cloud-agents');
-        const response = await fetchApi.fetch(`${base}/agents?status=needs_input`);
+        const response = await fetchApi.fetch(
+          `${base}/agents?status=needs_input`,
+        );
         if (stopped) return;
         if (response.status === 404) {
           stopped = true;
           setCount(undefined);
           return;
         }
-        setCount(response.ok ? countNeedsInput(await response.json()) : undefined);
+        setCount(
+          response.ok ? countNeedsInput(await response.json()) : undefined,
+        );
       } catch {
         if (!stopped) setCount(undefined);
       }

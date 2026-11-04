@@ -32,7 +32,10 @@ export interface IssueGroupingOptions {
 export const repositoryKey = (repository: GithubRepository) =>
   `${repository.owner}/${repository.name}`;
 
-export function hasHiddenLabel(issue: GithubIssue, hiddenLabels: readonly string[]): boolean {
+export function hasHiddenLabel(
+  issue: GithubIssue,
+  hiddenLabels: readonly string[],
+): boolean {
   const hidden = new Set(hiddenLabels.map(label => label.toLowerCase()));
   return issue.labels.some(label => hidden.has(label.name.toLowerCase()));
 }
@@ -41,7 +44,9 @@ export function matchesQuery(issue: GithubIssue, query: string): boolean {
   const q = query.trim().toLowerCase();
   if (!q) return true;
   const number = q.replace(/^#/, '');
-  return issue.title.toLowerCase().includes(q) || String(issue.number) === number;
+  return (
+    issue.title.toLowerCase().includes(q) || String(issue.number) === number
+  );
 }
 
 /**
@@ -52,9 +57,13 @@ export function groupIssues(
   issues: readonly GithubIssue[],
   { hideLabeled, hiddenLabels, query, now }: IssueGroupingOptions,
 ): IssueGrouping {
-  const hiddenCount = issues.filter(issue => hasHiddenLabel(issue, hiddenLabels)).length;
+  const hiddenCount = issues.filter(issue =>
+    hasHiddenLabel(issue, hiddenLabels),
+  ).length;
   const visible = issues.filter(
-    issue => (!hideLabeled || !hasHiddenLabel(issue, hiddenLabels)) && matchesQuery(issue, query),
+    issue =>
+      (!hideLabeled || !hasHiddenLabel(issue, hiddenLabels)) &&
+      matchesQuery(issue, query),
   );
 
   const groups = new Map<string, IssueGroup>();
@@ -74,13 +83,16 @@ export function groupIssues(
     }
   }
 
-  const sorted = [...groups.values()].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  const sorted = [...groups.values()].sort((a, b) =>
+    b.updatedAt.localeCompare(a.updatedAt),
+  );
   for (const group of sorted) {
     group.issues.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }
 
   const isQuiet = (group: IssueGroup) =>
-    !query.trim() && now - Date.parse(group.updatedAt) > QUIET_AFTER_DAYS * DAY_MS;
+    !query.trim() &&
+    now - Date.parse(group.updatedAt) > QUIET_AFTER_DAYS * DAY_MS;
 
   return {
     active: sorted.filter(group => !isQuiet(group)),

@@ -12,8 +12,13 @@ export function usePersistentState<T extends JsonValue>(
   parse: (value: unknown) => T | undefined,
 ): [T | undefined, (value: T) => void] {
   const storageApi = useApi(storageApiRef);
-  const storage = useMemo(() => storageApi.forBucket(STORAGE_BUCKET), [storageApi]);
-  const [value, setValue] = useState<T | undefined>(() => parse(storage.snapshot(key).value));
+  const storage = useMemo(
+    () => storageApi.forBucket(STORAGE_BUCKET),
+    [storageApi],
+  );
+  const [value, setValue] = useState<T | undefined>(() =>
+    parse(storage.snapshot(key).value),
+  );
   const parseRef = useRef(parse);
   parseRef.current = parse;
 
@@ -35,4 +40,6 @@ export function usePersistentState<T extends JsonValue>(
 }
 
 export const parseStringList = (value: unknown): string[] | undefined =>
-  Array.isArray(value) && value.every(item => typeof item === 'string') ? value : undefined;
+  Array.isArray(value) && value.every(item => typeof item === 'string')
+    ? value
+    : undefined;

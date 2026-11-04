@@ -31,7 +31,11 @@
   z-index: -1;
   width: 560px;
   height: 360px;
-  background: radial-gradient(closest-side, var(--bui-announcement-bg-subdued), transparent);
+  background: radial-gradient(
+    closest-side,
+    var(--bui-announcement-bg-subdued),
+    transparent
+  );
   opacity: 0.6;
   pointer-events: none;
 }

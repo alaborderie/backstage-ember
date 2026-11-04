@@ -5,7 +5,10 @@
  * @packageDocumentation
  */
 import { z } from 'zod/v4';
-import { ApiBlueprint, createFrontendModule } from '@backstage/frontend-plugin-api';
+import {
+  ApiBlueprint,
+  createFrontendModule,
+} from '@backstage/frontend-plugin-api';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import {
   HomePageLayoutBlueprint,
@@ -26,7 +29,10 @@ const githubHomeApi = ApiBlueprint.makeWithOverrides({
         api: githubHomeApiRef,
         deps: { githubAuthApi: githubAuthApiRef },
         factory: ({ githubAuthApi }) =>
-          new GithubGraphqlClient({ auth: githubAuthApi, scopes: config.scopes }),
+          new GithubGraphqlClient({
+            auth: githubAuthApi,
+            scopes: config.scopes,
+          }),
       }),
     );
   },
@@ -42,9 +48,12 @@ const issuesWidget = HomePageWidgetBlueprint.makeWithOverrides({
     yield* originalFactory({
       name: 'GithubOpenIssues',
       title: 'Open issues',
-      description: 'Open GitHub issues in your repositories, grouped by repository',
+      description:
+        'Open GitHub issues in your repositories, grouped by repository',
       components: () =>
-        import('./components/IssuesWidget').then(m => ({ Content: m.IssuesWidget })),
+        import('./components/IssuesWidget').then(m => ({
+          Content: m.IssuesWidget,
+        })),
       layout: {
         width: { defaultColumns: 7 },
         height: { minRows: 8, defaultRows: 17 },
@@ -63,9 +72,12 @@ const pullRequestsWidget = HomePageWidgetBlueprint.make({
   params: {
     name: 'GithubPullRequests',
     title: 'Pull requests',
-    description: 'Your open GitHub pull requests and review requests, filtered by project',
+    description:
+      'Your open GitHub pull requests and review requests, filtered by project',
     components: () =>
-      import('./components/PullRequestsWidget').then(m => ({ Content: m.PullRequestsWidget })),
+      import('./components/PullRequestsWidget').then(m => ({
+        Content: m.PullRequestsWidget,
+      })),
     layout: {
       width: { defaultColumns: 5 },
       height: { minRows: 6, defaultRows: 12 },
@@ -104,5 +116,8 @@ export {
   type CheckRollup,
   type PullRequestScope,
 } from './api/types';
-export { GithubGraphqlClient, type GithubGraphqlClientOptions } from './api/GithubGraphqlClient';
+export {
+  GithubGraphqlClient,
+  type GithubGraphqlClientOptions,
+} from './api/GithubGraphqlClient';
 export { GithubHomeError, type GithubFailure } from './api/errors';
