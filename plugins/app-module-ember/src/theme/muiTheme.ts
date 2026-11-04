@@ -76,6 +76,12 @@ const components: UnifiedThemeOptions['components'] = {
         '&:hover': { backgroundColor: c.emberPress },
       },
       outlined: { borderColor: c.line2 },
+      outlinedPrimary: {
+        color: c.emberFg,
+        borderColor: c.emberLine,
+        '&:hover': { borderColor: c.emberFg, backgroundColor: c.emberSoft },
+      },
+      textPrimary: { color: c.emberFg },
       text: { color: c.fg2, '&:hover': { color: c.fg1 } },
     },
   },

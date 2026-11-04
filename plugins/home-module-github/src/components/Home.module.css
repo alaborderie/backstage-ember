@@ -122,7 +122,6 @@
   color: var(--bui-fg-secondary);
 }
 
-/* Fields and chips */
 .field {
   display: flex;
   flex: 1 1 180px;
@@ -263,7 +262,6 @@
   pointer-events: none;
 }
 
-/* Issue groups */
 .groupHead {
   display: flex;
   align-items: center;
@@ -467,7 +465,6 @@
   font-weight: 500;
 }
 
-/* Pull requests */
 .pr {
   position: relative;
   display: grid;
@@ -598,7 +595,6 @@
   font-size: 11px;
 }
 
-/* States */
 .skelRow {
   display: flex;
   align-items: center;

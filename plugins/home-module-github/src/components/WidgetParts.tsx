@@ -2,6 +2,7 @@ import { useId, type ReactNode } from 'react';
 import { githubAuthApiRef, useApi } from '@backstage/core-plugin-api';
 import {
   CircleAlert,
+  LogIn,
   RefreshCw,
   TriangleAlert,
   type LucideIcon,
@@ -210,14 +211,16 @@ export function ErrorState({
 }) {
   const { title, text } = describe(failure, now);
   const retry = useRetry(failure, onRetry);
+  const signIn = failure.kind === 'unauthorized';
+  const ActionIcon = signIn ? LogIn : RefreshCw;
   return (
     <StateMessage
-      Icon={TriangleAlert}
+      Icon={signIn ? LogIn : TriangleAlert}
       title={title}
-      error
+      error={!signIn}
       action={
         <button type="button" className={styles.button} onClick={retry.run}>
-          <RefreshCw {...ICON_SM} />
+          <ActionIcon {...ICON_SM} />
           {retry.label}
         </button>
       }

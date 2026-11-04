@@ -110,6 +110,12 @@ function issuesWidgetProps(widgets: HomePageWidgetData[]): IssuesWidgetProps {
   return (widget?.component.props ?? {}) as IssuesWidgetProps;
 }
 
+function hiddenSummary(hidden: number | undefined, labels: string[]): string {
+  if (hidden === undefined) return 'not loaded';
+  if (!hidden) return 'nothing hidden';
+  return `${hidden} ${labels.join(', ').replace(/-/g, ' ')} hidden`;
+}
+
 const plural = (n: number, one: string, many: string) =>
   `${n} ${n === 1 ? one : many}`;
 
@@ -355,13 +361,7 @@ export function HomeLayout({ widgets, defaultConfig }: HomePageLayoutProps) {
           Icon={CircleDot}
           label="Open issues"
           value={issueStats?.total}
-          sub={
-            issueStats?.hidden
-              ? `${issueStats.hidden} ${hiddenLabels
-                  .join(', ')
-                  .replace(/-/g, ' ')} hidden`
-              : 'nothing hidden'
-          }
+          sub={hiddenSummary(issueStats?.hidden, hiddenLabels)}
           index={0}
         />
         <Tile

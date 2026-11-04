@@ -220,6 +220,12 @@
   .tileSub {
     display: none;
   }
+  .tileHead {
+    align-items: flex-start;
+  }
+  .tileLabel {
+    white-space: normal;
+  }
 }
 
 @keyframes rise {
