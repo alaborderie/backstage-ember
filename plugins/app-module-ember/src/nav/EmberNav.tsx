@@ -29,6 +29,7 @@ import {
   SearchModalProvider,
   useSearchModal,
 } from '@backstage/plugin-search';
+import { searchApiRef } from '@backstage/plugin-search-react';
 import {
   NotificationsSidebarItem,
   notificationsApiRef,
@@ -82,8 +83,9 @@ function isTypingTarget(target: EventTarget | null): boolean {
 }
 
 /** Opens the search modal on ⌘K, Ctrl+K and `/`, as the palette does. */
-function useSearchHotkeys(toggle: () => void, open: boolean) {
+function useSearchHotkeys(toggle: () => void, open: boolean, enabled: boolean) {
   useEffect(() => {
+    if (!enabled) return undefined;
     const onKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
@@ -102,7 +104,7 @@ function useSearchHotkeys(toggle: () => void, open: boolean) {
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [toggle, open]);
+  }, [toggle, open, enabled]);
 }
 
 function Brand() {
@@ -294,7 +296,7 @@ function CollapseItem() {
 
 function MobileTopBar({ title, onSearch, settingsHref }: {
   title: string;
-  onSearch: () => void;
+  onSearch?: () => void;
   settingsHref: string;
 }) {
   const profile = useProfile();
@@ -304,9 +306,11 @@ function MobileTopBar({ title, onSearch, settingsHref }: {
         <Flame size={16} strokeWidth={1.75} />
       </span>
       <span className={styles.topBarTitle}>{title}</span>
-      <button type="button" className={styles.iconButton} aria-label="Search" onClick={onSearch}>
-        <Search {...ICON_PROPS} />
-      </button>
+      {onSearch && (
+        <button type="button" className={styles.iconButton} aria-label="Search" onClick={onSearch}>
+          <Search {...ICON_PROPS} />
+        </button>
+      )}
       <RouterLink to={settingsHref} className={styles.iconButton} aria-label="Account settings">
         <Avatar profile={profile} size={28} />
       </RouterLink>
@@ -330,7 +334,8 @@ function EmberSidebar({ navItems }: NavContentComponentProps) {
   const { isMobile } = useSidebarPinState();
   const { pathname } = useLocation();
   const needsYou = useNeedsYouCount();
-  useSearchHotkeys(toggleModal, state.open && !state.hidden);
+  const hasSearch = !!useApiHolder().get(searchApiRef);
+  useSearchHotkeys(toggleModal, state.open && !state.hidden, hasSearch);
 
   navItems.take('page:search');
   navItems.take('page:notifications');
@@ -372,13 +377,19 @@ function EmberSidebar({ navItems }: NavContentComponentProps) {
   return (
     <>
       {isMobile && (
-        <MobileTopBar title={titleFor(pathname, all)} onSearch={toggleModal} settingsHref={settingsHref} />
+        <MobileTopBar
+          title={titleFor(pathname, all)}
+          settingsHref={settingsHref}
+          {...(hasSearch ? { onSearch: toggleModal } : {})}
+        />
       )}
       <Sidebar disableExpandOnHover>
         <Brand />
-        <SidebarGroup label="Search" icon={<Search {...ICON_PROPS} />} to="/search" priority={2}>
-          <SearchTrigger onOpen={toggleModal} />
-        </SidebarGroup>
+        {hasSearch && (
+          <SidebarGroup label="Search" icon={<Search {...ICON_PROPS} />} to="/search" priority={2}>
+            <SearchTrigger onOpen={toggleModal} />
+          </SidebarGroup>
+        )}
         {home && (
           <SidebarGroup label={home.title} icon={<House {...ICON_PROPS} />} to={home.href} priority={5}>
             {item(home)}
@@ -416,7 +427,7 @@ function EmberSidebar({ navItems }: NavContentComponentProps) {
         <AccountItem href={settingsHref} />
         <CollapseItem />
       </Sidebar>
-      <SearchModal {...state} toggleModal={toggleModal} />
+      {hasSearch && <SearchModal {...state} toggleModal={toggleModal} />}
     </>
   );
 }
