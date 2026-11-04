@@ -262,6 +262,18 @@ describe('GithubGraphqlClient', () => {
       expect(fetch).not.toHaveBeenCalled();
     });
 
+    it('signs in with the configured scopes', async () => {
+      const getAccessToken = jest.fn(async () => 'token');
+      const client = new GithubGraphqlClient({
+        auth: { getAccessToken },
+        scopes: ['repo'],
+      });
+      await client.signIn();
+      expect(getAccessToken).toHaveBeenCalledWith(['repo'], {
+        instantPopup: true,
+      });
+    });
+
     it('reports server errors as unavailable', async () => {
       const error = await fail(
         new Response('', { status: 502, statusText: 'Bad Gateway' }),

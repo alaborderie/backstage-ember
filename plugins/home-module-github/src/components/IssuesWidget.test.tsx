@@ -1,11 +1,13 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { storageApiRef } from '@backstage/core-plugin-api';
+import { identityApiRef, storageApiRef } from '@backstage/core-plugin-api';
 import { mockApis, renderInTestApp } from '@backstage/frontend-test-utils';
 import { githubHomeApiRef, type GithubHomeApi } from '../api/types';
 import { GithubHomeError } from '../api/errors';
 import { issue, onHold } from '../testing/fixtures';
 import { IssuesWidget } from './IssuesWidget';
+
+const USER = 'user:default/ada';
 
 const DAY = 86_400_000;
 const ago = (days: number) =>
@@ -26,6 +28,7 @@ const render = (
     apis: [
       [githubHomeApiRef, { getOpenIssues, getPullRequests: jest.fn() }],
       [storageApiRef, storage],
+      [identityApiRef, mockApis.identity({ userEntityRef: USER })],
     ],
   });
 
@@ -82,10 +85,13 @@ describe('IssuesWidget', () => {
 
   it('keeps cached issues on screen when a refresh hits the rate limit', async () => {
     const storage = mockApis.storage();
-    await storage.forBucket('home.github').set('issues:acme', {
-      items: issues(),
-      fetchedAt: Date.now() - 2 * 3_600_000,
-    } as never);
+    await storage
+      .forBucket('home.github')
+      .forBucket(USER)
+      .set('issues:acme', {
+        items: issues(),
+        fetchedAt: Date.now() - 2 * 3_600_000,
+      } as never);
     await render(
       jest.fn(async () => {
         throw new GithubHomeError(
@@ -100,6 +106,29 @@ describe('IssuesWidget', () => {
     expect(
       screen.getByRole('button', { name: /garden-app/ }),
     ).toBeInTheDocument();
+  });
+
+  it("never shows another user's cached issues", async () => {
+    const storage = mockApis.storage();
+    await storage
+      .forBucket('home.github')
+      .forBucket('user:default/someone-else')
+      .set('issues:acme', { items: issues(), fetchedAt: Date.now() } as never);
+    await render(
+      jest.fn(async () => {
+        throw new GithubHomeError(
+          { kind: 'rate-limited', status: 429 },
+          'limited',
+        );
+      }),
+      storage,
+    );
+    expect(
+      await screen.findByText('GitHub did not answer'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /garden-app/ }),
+    ).not.toBeInTheDocument();
   });
 
   it('says so when nothing is open', async () => {

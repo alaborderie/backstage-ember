@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { storageApiRef, useApi } from '@backstage/core-plugin-api';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { JsonValue } from '@backstage/types';
-import { STORAGE_BUCKET } from './useGithubData';
+import { useUserBucket } from './useUserBucket';
 
 /**
  * A per-user preference stored through `storageApiRef`. `parse` rejects
@@ -11,18 +10,14 @@ export function usePersistentState<T extends JsonValue>(
   key: string,
   parse: (value: unknown) => T | undefined,
 ): [T | undefined, (value: T) => void] {
-  const storageApi = useApi(storageApiRef);
-  const storage = useMemo(
-    () => storageApi.forBucket(STORAGE_BUCKET),
-    [storageApi],
-  );
-  const [value, setValue] = useState<T | undefined>(() =>
-    parse(storage.snapshot(key).value),
-  );
+  const storage = useUserBucket();
+  const [value, setValue] = useState<T>();
   const parseRef = useRef(parse);
   parseRef.current = parse;
 
   useEffect(() => {
+    if (!storage) return undefined;
+    setValue(parseRef.current(storage.snapshot(key).value));
     const subscription = storage.observe$<JsonValue>(key).subscribe(next => {
       setValue(parseRef.current(next.value));
     });
@@ -32,7 +27,7 @@ export function usePersistentState<T extends JsonValue>(
   const update = useCallback(
     (next: T) => {
       setValue(next);
-      storage.set(key, next).catch(() => undefined);
+      storage?.set(key, next).catch(() => undefined);
     },
     [storage, key],
   );

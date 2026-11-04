@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { storageApiRef, useApi } from '@backstage/core-plugin-api';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { JsonValue } from '@backstage/types';
 import { toGithubFailure, type GithubFailure } from '../api/errors';
+import { useUserBucket } from './useUserBucket';
 
-export const STORAGE_BUCKET = 'home.github';
 const STALE_MS = 60_000;
 const POLL_MS = 5 * 60_000;
 
@@ -39,14 +38,8 @@ export function useGithubData<T>(
   key: string,
   load: () => Promise<T[]>,
 ): GithubData<T> {
-  const storageApi = useApi(storageApiRef);
-  const storage = useMemo(
-    () => storageApi.forBucket(STORAGE_BUCKET),
-    [storageApi],
-  );
-  const [snapshot, setSnapshot] = useState<Snapshot<T> | undefined>(() =>
-    parseSnapshot<T>(storage.snapshot(key).value),
-  );
+  const storage = useUserBucket();
+  const [snapshot, setSnapshot] = useState<Snapshot<T>>();
   const [loading, setLoading] = useState(false);
   const [failure, setFailure] = useState<GithubFailure>();
   const loadRef = useRef(load);
@@ -55,6 +48,7 @@ export function useGithubData<T>(
   keyRef.current = key;
 
   useEffect(() => {
+    if (!storage) return undefined;
     setSnapshot(parseSnapshot<T>(storage.snapshot(key).value));
     setFailure(undefined);
     setLoading(false);
@@ -66,6 +60,7 @@ export function useGithubData<T>(
   }, [storage, key]);
 
   const refresh = useCallback(async () => {
+    if (!storage) return;
     const current = () => keyRef.current === key;
     setLoading(true);
     try {
@@ -86,6 +81,7 @@ export function useGithubData<T>(
   }, [storage, key]);
 
   useEffect(() => {
+    if (!storage) return undefined;
     const refreshIfStale = () => {
       const fetchedAt =
         parseSnapshot<T>(storage.snapshot(key).value)?.fetchedAt ?? 0;

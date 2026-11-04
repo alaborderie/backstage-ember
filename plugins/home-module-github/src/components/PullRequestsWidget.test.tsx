@@ -1,12 +1,14 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { storageApiRef } from '@backstage/core-plugin-api';
+import { identityApiRef, storageApiRef } from '@backstage/core-plugin-api';
 import { mockApis, renderInTestApp } from '@backstage/frontend-test-utils';
 
 type Storage = ReturnType<typeof mockApis.storage>;
 import { githubHomeApiRef, type GithubHomeApi } from '../api/types';
 import { pullRequest } from '../testing/fixtures';
 import { PullRequestsWidget } from './PullRequestsWidget';
+
+const USER = 'user:default/ada';
 
 const authored = [
   pullRequest('garden-app', 1, {
@@ -31,6 +33,7 @@ const render = (storage: Storage, githubHomeApi = api()) =>
     apis: [
       [githubHomeApiRef, githubHomeApi],
       [storageApiRef, storage],
+      [identityApiRef, mockApis.identity({ userEntityRef: USER })],
     ],
   });
 
@@ -45,7 +48,10 @@ describe('PullRequestsWidget', () => {
     await userEvent.click(screen.getByRole('button', { name: /^garden-app/ }));
     expect(rows()).toHaveLength(2);
     expect(
-      storage.forBucket('home.github').snapshot('pulls.projects').value,
+      storage
+        .forBucket('home.github')
+        .forBucket(USER)
+        .snapshot('pulls.projects').value,
     ).toEqual(['acme/garden-app']);
     first.unmount();
 

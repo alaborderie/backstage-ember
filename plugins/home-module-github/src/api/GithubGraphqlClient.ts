@@ -140,7 +140,7 @@ export interface GithubGraphqlClientOptions {
   auth: {
     getAccessToken(
       scope?: string[],
-      options?: { optional?: boolean },
+      options?: { optional?: boolean; instantPopup?: boolean },
     ): Promise<string>;
   };
   /** Extra OAuth scopes. A GitHub App ignores scopes, so the default is none. */
@@ -201,6 +201,12 @@ export class GithubGraphqlClient implements GithubHomeApi {
         SEARCHES[scope],
       );
       return nodes.map(toPullRequest);
+    });
+  }
+
+  async signIn(): Promise<void> {
+    await this.options.auth.getAccessToken(this.options.scopes, {
+      instantPopup: true,
     });
   }
 

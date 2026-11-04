@@ -1,5 +1,6 @@
 import { useId, type ReactNode } from 'react';
-import { githubAuthApiRef, useApi } from '@backstage/core-plugin-api';
+import { useApi } from '@backstage/core-plugin-api';
+import { githubHomeApiRef } from '../api/types';
 import {
   CircleAlert,
   LogIn,
@@ -185,14 +186,13 @@ function describe(
 }
 
 function useRetry(failure: GithubFailure, retry: () => void) {
-  const githubAuthApi = useApi(githubAuthApiRef);
+  const githubHomeApi = useApi(githubHomeApiRef);
   if (failure.kind !== 'unauthorized')
     return { label: 'Try again', run: retry };
   return {
     label: 'Sign in to GitHub',
     run: () => {
-      githubAuthApi
-        .getAccessToken([], { instantPopup: true })
+      (githubHomeApi.signIn?.() ?? Promise.resolve())
         .then(retry)
         .catch(() => undefined);
     },

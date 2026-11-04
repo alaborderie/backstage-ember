@@ -62,6 +62,8 @@ export interface GithubHomeApi {
   getPullRequests(options: {
     scope: PullRequestScope;
   }): Promise<GithubPullRequest[]>;
+  /** Asks the user to sign in to GitHub with the scopes the API needs. */
+  signIn?(): Promise<void>;
 }
 
 /** @public */
