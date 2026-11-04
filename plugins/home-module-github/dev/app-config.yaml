@@ -1,0 +1,29 @@
+# Dev app for the GitHub home widgets: `yarn start` in this package. GitHub is
+# mocked with fictional data; add ?github=loading|empty|ratelimit|expired|error
+# and ?fresh to the URL to see each state.
+app:
+  title: Ember home (dev)
+  baseUrl: http://localhost:3000
+  extensions:
+    - theme:app/light: false
+    - theme:app/dark: false
+    - page:home:
+        config:
+          path: /
+          defaultConfig:
+            - component: GithubOpenIssues
+              column: 0
+              row: 0
+              width: 7
+              height: 17
+            - component: GithubPullRequests
+              column: 7
+              row: 0
+              width: 5
+              height: 10
+    - home-page-widget:home/github-issues:
+        config:
+          owner: acme
+          hiddenLabels: [on-hold]
+backend:
+  baseUrl: http://localhost:7007
