@@ -27,6 +27,24 @@ describe('Ember stylesheet', () => {
     expect(missing).toEqual([]);
   });
 
+  it.each([
+    ['--bui-bg-solid', emberTokens.color.ember],
+    ['--bui-bg-solid-hover', emberTokens.color.emberPress],
+    ['--bui-bg-solid-pressed', emberTokens.color.emberPress],
+    ['--bui-bg-solid-disabled', emberTokens.color.surface3],
+    ['--bui-fg-solid', emberTokens.color.onEmber],
+    ['--bui-fg-solid-disabled', emberTokens.color.fg3],
+    ['--bui-bg-neutral-1', emberTokens.color.surface1],
+    ['--bui-bg-neutral-2', emberTokens.color.surface2],
+    ['--bui-bg-neutral-1-disabled', emberTokens.color.surface3],
+    ['--bui-fg-primary', emberTokens.color.fg1],
+    ['--bui-fg-disabled', emberTokens.color.lineInput],
+    ['--bui-ring', emberTokens.color.emberFg],
+  ] as const)('themes button and toggle state token %s', (name, value) => {
+    expect(buiVariables[name]).toBe(value);
+    expect(emberStylesheet('ember')).toContain(`${name}: ${value};`);
+  });
+
   it('applies only while the Ember theme is active', () => {
     const css = emberStylesheet('ember');
     expect(css).toContain("body[data-theme-name='ember'] {");
